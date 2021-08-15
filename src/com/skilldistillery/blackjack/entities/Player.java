@@ -1,7 +1,7 @@
 package com.skilldistillery.blackjack.entities;
 
 public class Player{
-	BlackjackHand hand;
+	private BlackjackHand hand;
 	
 	public Player() {
 		this.hand = new BlackjackHand();
