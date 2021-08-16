@@ -7,69 +7,71 @@ import com.skilldistillery.blackjack.entities.Player;
 public class BlackjackApp {
 	Player player = new Player();
 	Dealer dealer = new Dealer();
+	Scanner sc = new Scanner(System.in);
+	static boolean keepPlaying = true;
 
 	public static void main(String[] args) {
 		BlackjackApp bja = new BlackjackApp();
 		bja.run();
+		bja.sc.close();
 	}
-
+	
 	private void run() {
-		Scanner sc = new Scanner(System.in);
-		boolean keepPlaying = true;
-		boolean playerGoing = true;
-		boolean dealerGoing = true;
-
-		while (keepPlaying) {
-			if (dealer.cardNumInDeck() < 4) {
-				System.out.println("Not enough cards left, please exit to restart game!");
+		while(keepPlaying) {
+			startGame();
+			playerTurn();
+			dealerTurn();
+			checkContinue();
+		}
+	}	
+		
+	private void startGame() {
+		dealer.dealerShuffle();
+		for (int i = 0; i < 2; i++) {
+			dealer.dealCard(dealer);
+			dealer.dealCard(player);
+		}
+		displayFirstTwoCards();
+		if(player.isBlackjack()) {
+			System.out.println("Player : Blackjack!!!");
+		}
+	}	
+		
+	private void playerTurn() {
+		while (!player.isBlackjack()) {
+			if (dealer.cardNumInDeck() < 1) {
+				System.out.println("Not enough cards left for player, please exit!");
+				keepPlaying = false;
 				break;
 			}
-			dealer.dealerShuffle();
-			for (int i = 0; i < 2; i++) {
-				dealer.dealCard(dealer);
+			System.out.println("Enter your choice: ");
+			System.out.println("1. Hit");
+			System.out.println("2. Stand");
+			int choice = sc.nextInt();
+			if (choice == 1) {
 				dealer.dealCard(player);
-			}
-			displayFirstTwoCards();
-			if(player.isBlackjack()) {
-				System.out.println("Player : Blackjack!!!");
-				playerGoing = false;
-			}
-			while (playerGoing) {
-				if (dealer.cardNumInDeck() < 1) {
-					System.out.println("Not enough cards left, please exit to restart game!");
-					playerGoing = false;
-					dealerGoing = false;
-					keepPlaying = false;
+				displayCardsAndValue(player);
+				if(player.isBust()) {
+					displayCardsAndValue(dealer);
+					System.out.println("Player Bust! Dealer Win!");
 					break;
 				}
-				System.out.println("Enter your choice: ");
-				System.out.println("1. Hit");
-				System.out.println("2. Stand");
-				int choice = sc.nextInt();
-				if (choice == 1) {
-					dealer.dealCard(player);
-					displayCardsAndValue(player);
-					if(player.isBust()) {
-						displayCardsAndValue(dealer);
-						System.out.println("Player Bust! Dealer Win!");
-						dealerGoing = false;
-						break;
-					}
-				} else {
-					break;
-				}
+			} else {
+				break;
 			}
-			while (dealerGoing) {
+		}
+	}
+	
+	private void dealerTurn() {
+		if(!player.isBust()) {
+			while (true) {
 				if(dealer.isBlackjack()) {
 					System.out.println("Dealer : Blackjack!!!");
-					dealerGoing = false;
-					
 				}
 				while (dealer.getHandValue() < 17) {
 					if (dealer.cardNumInDeck() < 1) {
-						System.out.println("Not enough cards left, please exit to restart game!");
-						playerGoing = false;
-						dealerGoing = false;
+						System.out.println("Not enough cards left for dealer, please exit!");
+						keepPlaying = false;
 						break;
 					}
 					dealer.dealCard(dealer);
@@ -79,24 +81,26 @@ public class BlackjackApp {
 				displayResult();
 				break;
 			}
-			
-			System.out.print("Enter Y/y to keep playing, N/n to exit: ");
-			String select = sc.next();
-			if (select.equalsIgnoreCase("Y")) {
-				keepPlaying = true;
-				playerGoing = true;
-				dealerGoing = true;
-				player.clear();
-				dealer.clear();
-			} else {
-				System.out.println("Goodbye!");
-				keepPlaying = false;
-			}
-			System.out.println();
 		}
-		sc.close();
 	}
 
+	private void checkContinue() {
+		System.out.print("Enter Y/y to keep playing, N/n to exit: ");
+		String select = sc.next();
+		if (select.equalsIgnoreCase("Y") && dealer.cardNumInDeck()>=4) {
+			keepPlaying = true;
+		} else {
+			if(dealer.cardNumInDeck() < 4) {
+				System.out.println("Not enough cards left. ");
+			}
+			System.out.println("Goodbye!");
+			keepPlaying = false;
+		}
+		player.clear();
+		dealer.clear();
+		System.out.println();
+	}
+	
 	private void displayFirstTwoCards() {
 		System.out.println("Player: ");
 		System.out.println(player);
@@ -141,3 +145,5 @@ public class BlackjackApp {
 	}
 
 }
+
+
