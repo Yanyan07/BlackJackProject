@@ -21,6 +21,7 @@ public class BlackjackApp {
 			startGame();
 			playerTurn();
 			dealerTurn();
+			displayResult();
 			checkContinue();
 		}
 	}	
@@ -38,12 +39,7 @@ public class BlackjackApp {
 	}	
 		
 	private void playerTurn() {
-		while (!player.isBlackjack()) {
-			if (dealer.cardNumInDeck() < 1) {
-				System.out.println("Not enough cards left for player, please exit!");
-				keepPlaying = false;
-				break;
-			}
+		while (!player.isBlackjack() && dealer.cardNumInDeck()>=1) {
 			System.out.println("Enter your choice: ");
 			System.out.println("1. Hit");
 			System.out.println("2. Stand");
@@ -52,8 +48,6 @@ public class BlackjackApp {
 				dealer.dealCard(player);
 				displayCardsAndValue(player);
 				if(player.isBust()) {
-					displayCardsAndValue(dealer);
-					System.out.println("Player Bust! Dealer Win!");
 					break;
 				}
 			} else {
@@ -63,27 +57,46 @@ public class BlackjackApp {
 	}
 	
 	private void dealerTurn() {
-		if(!player.isBust()) {
-			while (true) {
-				if(dealer.isBlackjack()) {
-					System.out.println("Dealer : Blackjack!!!");
+		while(!player.isBust() && dealer.cardNumInDeck()>=1 && dealer.getHandValue()<17) {
+				dealer.dealCard(dealer);
+		}
+		if(dealer.isBlackjack()) {
+			System.out.println("Dealer : Blackjack!!!");
+		}
+	}
+	
+	private void displayResult() {
+		System.out.println("Display result...");
+		
+		if(dealer.cardNumInDeck() < 1) {
+			System.out.println("Not enough cards left, please exit to restart game.");
+		}else {
+			displayCardsAndValue(player);
+			displayCardsAndValue(dealer);
+			int dealerValue = dealer.getHandValue();
+			int playerValue = player.getHandValue();
+			if(player.isBust()) {
+				System.out.println("Player Bust! Dealer Win!");
+			}else if (dealer.isBust()) {
+				System.out.println("Dealer Bust! Player Win!");
+			}else if(player.isBlackjack() && dealer.isBlackjack()) {
+				System.out.println("Push!");
+			}else if(player.isBlackjack()) {
+				System.out.println("Player Win!");
+			}else if(dealer.isBlackjack()) {
+				System.out.println("Dealer Win!");
+			}else if (dealerValue <= 21 && !dealer.isBlackjack() && playerValue<=21 && !player.isBlackjack()) {
+				if (dealerValue > playerValue) {
+					System.out.println("Dealer Win!");
+				} else if (dealerValue < playerValue) {
+					System.out.println("Player Win!");
+				} else {
+					System.out.println("Push!");
 				}
-				while (dealer.getHandValue() < 17) {
-					if (dealer.cardNumInDeck() < 1) {
-						System.out.println("Not enough cards left for dealer, please exit!");
-						keepPlaying = false;
-						break;
-					}
-					dealer.dealCard(dealer);
-				}
-				displayCardsAndValue(player);
-				displayCardsAndValue(dealer);
-				displayResult();
-				break;
 			}
 		}
 	}
-
+	
 	private void checkContinue() {
 		System.out.print("Enter Y/y to keep playing, N/n to exit: ");
 		String select = sc.next();
@@ -117,31 +130,6 @@ public class BlackjackApp {
 		System.out.println(player);
 		System.out.println("total value: " + player.getHandValue());
 		System.out.println("--------------------------------------");
-	}
-
-	private void displayResult() {
-		int dealerValue = dealer.getHandValue();
-		int playerValue = player.getHandValue();
-
-		if (dealer.isBust()) {
-			System.out.println("Dealer Bust! Player Win!");
-		} 
-		if(player.isBlackjack() && dealer.isBlackjack()) {
-			System.out.println("Push!");
-		}else if(player.isBlackjack()) {
-			System.out.println("Player Win!");
-		}else if(dealer.isBlackjack()) {
-			System.out.println("Dealer Win!");
-		}
-		if (dealerValue <= 21 && !dealer.isBlackjack() && !player.isBlackjack()) {
-			if (dealerValue > playerValue) {
-				System.out.println("Dealer Win!");
-			} else if (dealerValue < playerValue) {
-				System.out.println("Player Win!");
-			} else {
-				System.out.println("Push!");
-			}
-		}
 	}
 
 }
